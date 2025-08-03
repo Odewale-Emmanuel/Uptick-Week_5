@@ -1,4 +1,5 @@
 import { SignInForm } from "@/components/signin-form";
+import frame from "../../assets/frame-medium.jpg";
 
 function SignIn() {
   return (
@@ -7,7 +8,11 @@ function SignIn() {
         <SignInForm />
       </div>
       <div className="hidden md:block bg-black/3">
-        <img src="" alt="Image" />
+        <img
+          src={frame}
+          alt="Image"
+          className="h-full object-cover saturate-0"
+        />
       </div>
     </div>
   );

@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { LoaderIcon } from "lucide-react";
 import { useState } from "react";
 import { nameRegEx, passwordRegEx } from "@/utils/regex";
+// import axios from "axios";
 
 export function SignUpForm({
   className,
