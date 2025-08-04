@@ -7,7 +7,7 @@ import { LoaderIcon } from "lucide-react";
 import { useState } from "react";
 import { nameRegEx, emailRegEx, passwordRegEx } from "@/utils/regex";
 import { useNavigate } from "react-router-dom";
-import Swal from "sweetalert2";
+import { toast } from "react-toastify";
 import axios from "axios";
 
 export function SignUpForm({
@@ -53,16 +53,16 @@ export function SignUpForm({
     setConfirmPassword(e.target.value);
   }
 
-  async function handleSignUp(e: React.ChangeEvent<HTMLButtonElement>) {
+  async function handleSignUp(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     const passwordIsSame = password === confirmPassword;
     if (!passwordIsSame) {
-      Swal("Passwords must be same");
+      toast.error("Passwords must be same");
       return;
     }
 
     if (password === email) {
-      Swal("Your password can't be same as your email");
+      toast.error("Your password can't be same as your email");
       return;
     }
 
@@ -77,7 +77,7 @@ export function SignUpForm({
 
       try {
         const response = await axios.post(
-          "http://localhost:5500/api/user",
+          "http://localhost:5500/api/sign-up",
           {
             name: `${firstName} ${lastName}`,
             email: email,
@@ -100,13 +100,14 @@ export function SignUpForm({
           setLastName("");
           setPassword("");
           setConfirmPassword("");
-          Swal("account created successfully");
+          toast.success("account created successfully", {});
+          toast("redirecting to sign-in page now");
           setTimeout(() => {
             navigator("/sign-in");
-          }, 3000);
+          }, 8000);
         }
-      } catch (error: any) {
-        console.error("Error adding user:", error);
+      } catch (error: unknown) {
+        toast.error("an error occured while signing you up");
         throw error;
       }
     }
@@ -222,6 +223,7 @@ export function SignUpForm({
           type="submit"
           className="w-full"
           onClick={(e) => handleSignUp(e)}
+          disabled={loading}
         >
           {loading ? <LoaderIcon className="animate-spin" /> : "Sign Up"}
         </Button>
