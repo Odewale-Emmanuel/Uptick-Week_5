@@ -2,10 +2,13 @@ import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Link } from "react-router-dom";
+import { data, Link } from "react-router-dom";
 import { LoaderIcon } from "lucide-react";
 import { useState } from "react";
 import { passwordRegEx, emailRegEx } from "@/utils/regex";
+import { useNavigate } from "react-router-dom";
+import { toast } from "react-toastify";
+import axios from "axios";
 
 export function SignInForm({
   className,
@@ -16,6 +19,7 @@ export function SignInForm({
   const [emailCheck, setEmailCheck] = useState<boolean>(false);
   const [password, setPassword] = useState<string>("");
   const [passwordCheck, setPasswordCheck] = useState<boolean>(false);
+  const navigator = useNavigate();
 
   function handleEmail(e: React.ChangeEvent<HTMLInputElement>) {
     setEmailCheck(emailRegEx.test(e.target.value));
@@ -25,6 +29,54 @@ export function SignInForm({
   function handlePassword(e: React.ChangeEvent<HTMLInputElement>) {
     setPasswordCheck(passwordRegEx.test(e.target.value));
     setPassword(e.target.value);
+  }
+
+  async function handleSignIn(e: React.MouseEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    console.log(email, password);
+    if (!emailCheck) {
+      toast.error("Invalid email: please insert a valid email address");
+      return;
+    }
+
+    if (!passwordCheck) {
+      toast.error(
+        "Invalid password: must contain a special character, an upper and lowercase letter, and a number."
+      );
+      return;
+    }
+
+    if (emailCheck && passwordCheck) {
+      setLoading(true);
+
+      try {
+        const response: Axios.AxiosXHR<any> = await axios.post(
+          "http://localhost:5500/api/sign-in",
+          {
+            email: email,
+            password: password,
+          }
+        );
+
+        if (!(response.status == 200)) {
+          toast.error("Failed to sign in user");
+          throw new Error("Failed to sign in user");
+        }
+        if (response.status == 200) {
+          setLoading(false);
+          setEmail("");
+          setPassword("");
+          navigator("/dashboard");
+        }
+
+        const { accessToken } = response.data;
+        localStorage.setItem("authToken", String(accessToken));
+        console.log(accessToken);
+      } catch (error: unknown) {
+        toast.error("an error occured while trying to sign you in");
+        throw error;
+      }
+    }
   }
 
   return (
@@ -84,7 +136,7 @@ export function SignInForm({
           />
         </div>
         <Button
-          onClick={() => setLoading((p) => !p)}
+          onClick={handleSignIn}
           type="submit"
           className="w-full flex items-center hover:cursor-pointer"
         >

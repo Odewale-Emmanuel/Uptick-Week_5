@@ -56,13 +56,33 @@ export function SignUpForm({
   async function handleSignUp(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
     const passwordIsSame = password === confirmPassword;
-    if (!passwordIsSame) {
-      toast.error("Passwords must be same");
+
+    if (!firstNameCheck || !lastNameCheck) {
+      toast.error(
+        "Invalid name: name cannot be empty or cannot contain space, numbers or special characters"
+      );
+      return;
+    }
+
+    if (!emailCheck) {
+      toast.error("Invalid email: please insert a valid email address");
       return;
     }
 
     if (password === email) {
       toast.error("Your password can't be same as your email");
+      return;
+    }
+
+    if (!passwordCheck) {
+      toast.error(
+        "Invalid password: password cannot be empty and password must contain a sepcial character, a number, a lower and uppercase letter"
+      );
+      return;
+    }
+
+    if (!passwordIsSame) {
+      toast.error("Passwords must be same");
       return;
     }
 
