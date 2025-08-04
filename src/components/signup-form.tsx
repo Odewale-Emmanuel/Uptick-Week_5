@@ -127,6 +127,7 @@ export function SignUpForm({
           }, 8000);
         }
       } catch (error: unknown) {
+        setLoading(false);
         toast.error("an error occured while signing you up");
         throw error;
       }

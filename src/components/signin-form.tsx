@@ -73,6 +73,7 @@ export function SignInForm({
         localStorage.setItem("authToken", String(accessToken));
         console.log(accessToken);
       } catch (error: unknown) {
+        setLoading(false);
         toast.error("an error occured while trying to sign you in");
         throw error;
       }
