@@ -5,8 +5,10 @@ import { Label } from "@/components/ui/label";
 import { Link } from "react-router-dom";
 import { LoaderIcon } from "lucide-react";
 import { useState } from "react";
-import { nameRegEx, passwordRegEx } from "@/utils/regex";
-// import axios from "axios";
+import { nameRegEx, emailRegEx, passwordRegEx } from "@/utils/regex";
+import { useNavigate } from "react-router-dom";
+import Swal from "sweetalert2";
+import axios from "axios";
 
 export function SignUpForm({
   className,
@@ -17,11 +19,14 @@ export function SignUpForm({
   const [firstNameCheck, setFirstNameCheck] = useState<boolean>(false);
   const [lastName, setLastName] = useState<string>("");
   const [lastNameCheck, setLastNameCheck] = useState<boolean>(false);
+  const [email, setEmail] = useState<string>("");
+  const [emailCheck, setEmailCheck] = useState<boolean>(false);
   const [password, setPassword] = useState<string>("");
   const [passwordCheck, setPasswordCheck] = useState<boolean>(false);
   const [confirmPassword, setConfirmPassword] = useState<string>("");
   const [confirmPasswordCheck, setConfirmPasswordCheck] =
     useState<boolean>(false);
+  const navigator = useNavigate();
 
   function handleFirstName(e: React.ChangeEvent<HTMLInputElement>) {
     setFirstNameCheck(nameRegEx.test(e.target.value));
@@ -33,6 +38,11 @@ export function SignUpForm({
     setLastName(e.target.value);
   }
 
+  function handleEmail(e: React.ChangeEvent<HTMLInputElement>) {
+    setEmailCheck(emailRegEx.test(e.target.value));
+    setEmail(e.target.value);
+  }
+
   function handlePassword(e: React.ChangeEvent<HTMLInputElement>) {
     setPasswordCheck(passwordRegEx.test(e.target.value));
     setPassword(e.target.value);
@@ -41,6 +51,65 @@ export function SignUpForm({
   function handleConfirmPassword(e: React.ChangeEvent<HTMLInputElement>) {
     setConfirmPasswordCheck(passwordRegEx.test(e.target.value));
     setConfirmPassword(e.target.value);
+  }
+
+  async function handleSignUp(e: React.ChangeEvent<HTMLButtonElement>) {
+    e.preventDefault();
+    const passwordIsSame = password === confirmPassword;
+    if (!passwordIsSame) {
+      Swal("Passwords must be same");
+      return;
+    }
+
+    if (password === email) {
+      Swal("Your password can't be same as your email");
+      return;
+    }
+
+    if (
+      firstNameCheck &&
+      lastNameCheck &&
+      passwordCheck &&
+      confirmPasswordCheck &&
+      passwordIsSame
+    ) {
+      setLoading(true);
+
+      try {
+        const response = await axios.post(
+          "http://localhost:5500/api/user",
+          {
+            name: `${firstName} ${lastName}`,
+            email: email,
+            password: password,
+          },
+          {
+            headers: {
+              "Content-Type": "application/json",
+            },
+          }
+        );
+
+        if (!(response.status == 201)) {
+          throw new Error("Failed to create user");
+        }
+        if (response.status == 201) {
+          setLoading(false);
+          setEmail("");
+          setFirstName("");
+          setLastName("");
+          setPassword("");
+          setConfirmPassword("");
+          Swal("account created successfully");
+          setTimeout(() => {
+            navigator("/sign-in");
+          }, 3000);
+        }
+      } catch (error: any) {
+        console.error("Error adding user:", error);
+        throw error;
+      }
+    }
   }
 
   return (
@@ -99,6 +168,24 @@ export function SignUpForm({
 
         <div className="grid gap-3">
           <div className="flex items-center">
+            <Label htmlFor="email">Email</Label>
+          </div>
+          <Input
+            className={cn(
+              emailCheck
+                ? "focus-visible:ring-ring/50"
+                : "focus-visible:ring-red-600"
+            )}
+            id="email"
+            type="email"
+            placeholder="johndoe@mail.com"
+            value={email}
+            onChange={handleEmail}
+            required
+          />
+        </div>
+        <div className="grid gap-3">
+          <div className="flex items-center">
             <Label htmlFor="password">Password</Label>
           </div>
           <Input
@@ -134,7 +221,7 @@ export function SignUpForm({
         <Button
           type="submit"
           className="w-full"
-          onClick={() => setLoading((p) => !p)}
+          onClick={(e) => handleSignUp(e)}
         >
           {loading ? <LoaderIcon className="animate-spin" /> : "Sign Up"}
         </Button>
