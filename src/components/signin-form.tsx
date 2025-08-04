@@ -62,6 +62,7 @@ export function SignInForm({
           toast.error("Failed to sign in user");
           throw new Error("Failed to sign in user");
         }
+
         if (response.status == 200) {
           setLoading(false);
           setEmail("");

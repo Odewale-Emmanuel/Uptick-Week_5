@@ -1,11 +1,11 @@
 import { jwtDecode } from "jwt-decode";
-import {
-  LuNotebook,
-  LuNotebookPen,
-  LuSettings,
-  LuSearch,
-} from "react-icons/lu";
-import avatar from "@/assets/avatar.jpg";
+// import {
+//   LuNotebook,
+//   LuNotebookPen,
+//   LuSettings,
+//   LuSearch,
+// } from "react-icons/lu";
+// import avatar from "@/assets/avatar.jpg";
 import type { DecodedToken } from "@/types/decoded-token";
 
 const authToken = localStorage.getItem("authToken");
