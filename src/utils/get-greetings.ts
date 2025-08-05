@@ -3,13 +3,13 @@ function getGreeting(date: Date): string {
   const hours = date.getUTCHours();
 
   if (hours >= 5 && hours < 12) {
-    return "Good morning!";
+    return "Good morning";
   } else if (hours >= 12 && hours < 17) {
-    return "Good afternoon!";
+    return "Good afternoon";
   } else if (hours >= 17 && hours < 21) {
-    return "Good evening!";
+    return "Good evening";
   } else {
-    return "Good night!";
+    return "Good night";
   }
 }
 
