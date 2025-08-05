@@ -1,15 +1,22 @@
 import { jwtDecode } from "jwt-decode";
-import { LuNotebookPen, LuSettings, LuSearch, LuLogOut } from "react-icons/lu";
+import {
+  LuNotebookPen,
+  LuSettings,
+  LuSearch,
+  LuLogOut,
+  LuUser,
+} from "react-icons/lu";
 import avatar from "@/assets/avatar.jpg";
 import { getGreeting } from "@/utils/get-greetings";
 import type { DecodedToken } from "@/types/decoded-token";
 import { ModeToggle } from "@/components/mode-toggle";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, type NavigateFunction } from "react-router-dom";
 // import { useEffect, useState } from "react";
 import { LoaderIcon } from "lucide-react";
+import { type JSX } from "react";
 
-function UnauthenticatedUser() {
-  const navigate = useNavigate();
+function UnauthenticatedUser(): JSX.Element {
+  const navigate: NavigateFunction = useNavigate();
   setTimeout(() => {
     navigate("/sign-in");
   }, 3000);
@@ -30,9 +37,10 @@ function UnauthenticatedUser() {
   );
 }
 
-function Dashboard() {
-  const authToken = localStorage.getItem("authToken");
-  const navigate = useNavigate();
+function Dashboard(): JSX.Element {
+  const authToken: string | null | undefined =
+    localStorage.getItem("authToken");
+  const navigate: NavigateFunction = useNavigate();
   let user: DecodedToken | any = null;
 
   if (!authToken) {
@@ -47,7 +55,7 @@ function Dashboard() {
     }
   }
 
-  function handleLogout() {
+  function handleLogout(): void {
     localStorage.removeItem("authToken");
     navigate("/sign-in");
   }
@@ -57,11 +65,15 @@ function Dashboard() {
       <aside className="flex flex-col bg-[#fafafa] dark:bg-[#171717] p-4   gap-4 sm:gap-6 col-span-1">
         <div className="inline-flex flex-col gap-2 sm:gap-4">
           <span className="inline-flex items-center flex-col rounded-lg p-2 sm:p-3 gap-1 sm:gap-2 bg-white dark:bg-white/5">
-            <span className="aspect-square">
+            <span className="aspect-square group inline-flex w-full items-center justify-center bg-white/10">
+              <span className="absolute">
+                <LuUser className=" text-xl" />
+              </span>
               <img
                 src={avatar}
                 alt="user-avatar"
                 className="saturate-0 rounded-lg w-full h-full object-cover"
+                loading="lazy"
               />
             </span>{" "}
             <span className="inline-flex flex-col items-center">
