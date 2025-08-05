@@ -33,7 +33,7 @@ export function SignInForm({
 
   async function handleSignIn(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
-    console.log(email, password);
+
     if (!emailCheck) {
       toast.error("Invalid email: please insert a valid email address");
       return;
@@ -72,7 +72,6 @@ export function SignInForm({
 
         const { accessToken } = response.data;
         localStorage.setItem("authToken", String(accessToken));
-        console.log(accessToken);
       } catch (error: unknown) {
         setLoading(false);
         toast.error("an error occured while trying to sign you in");

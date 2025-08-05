@@ -11,9 +11,11 @@ import { getGreeting } from "@/utils/get-greetings";
 import type { DecodedToken } from "@/types/decoded-token";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Link, useNavigate, type NavigateFunction } from "react-router-dom";
-// import { useEffect, useState } from "react";
+import { useEffect, useState } from "react";
 import { LoaderIcon } from "lucide-react";
 import { type JSX } from "react";
+import { cn } from "@/utils/cn";
+import axios from "axios";
 
 function UnauthenticatedUser(): JSX.Element {
   const navigate: NavigateFunction = useNavigate();
@@ -38,6 +40,8 @@ function UnauthenticatedUser(): JSX.Element {
 }
 
 function Dashboard(): JSX.Element {
+  const [notePreview, setNotePreview] = useState(true);
+  const [users, setUsers] = useState(null);
   const authToken: string | null | undefined =
     localStorage.getItem("authToken");
   const navigate: NavigateFunction = useNavigate();
@@ -58,6 +62,19 @@ function Dashboard(): JSX.Element {
   function handleLogout(): void {
     localStorage.removeItem("authToken");
     navigate("/sign-in");
+  }
+
+  function hanldeUsers() {
+    try {
+      const userList = axios.get("http://localhost:5500/api/user", {
+        headers: {
+          Authorization: `Bearer ${authToken}`,
+        },
+      });
+      console.log(userList);
+    } catch (error) {
+      if (error) console.error(error);
+    }
   }
 
   return (
@@ -104,6 +121,7 @@ function Dashboard(): JSX.Element {
         <div className="inline-flex w-full flex-col mt-auto gap-3   sm:gap-4">
           <span className="inline-flex items-center rounded-lg  bg-transparent">
             <ModeToggle />
+            <button onClick={hanldeUsers}>see users</button>
           </span>
           <span
             className="inline-flex items-center rounded-lg p-2 sm:p-3 gap-3 sm:gap-4 bg-white dark:bg-white/5 hover:cursor-pointer"
@@ -122,9 +140,22 @@ function Dashboard(): JSX.Element {
         </div>
       </aside>
 
-      <section className="col-span-4">
-        <div className="">sec 2</div>
-        <div className="">sec 3</div>
+      <section className="flex col-span-4">
+        <div
+          className={cn(
+            "min-w-[calc(var(--spacing)*32)] bg-white dark:bg-white/10 p-4 sm:p-6",
+            !notePreview && "w-full"
+          )}
+        >
+          <h1 className="font-normal text-2xl sm:text-3xl">My Notes</h1>
+        </div>
+        <div
+          className={cn(
+            notePreview ? "grow-1 border-s-2 dark:bg-white/10" : "hidden"
+          )}
+        >
+          {/* {users && users.map()} */}
+        </div>
       </section>
     </div>
   );
