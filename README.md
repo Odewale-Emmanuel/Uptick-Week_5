@@ -11,7 +11,7 @@ Currently, two official plugins are available for Fast Refresh:
 
 ## Frontend Deployment
 
-The frontend of this application is hosted on Vercel. You can access it at:
+The frontend of this application is hosted on Vercel and is now live! You can access the app at:
 
 [**https://starknote.vercel.app/**](https://starknote.vercel.app/)
 
@@ -21,19 +21,64 @@ Feel free to explore the app and interact with the UI. However, please note that
 
 ## Backend Setup (Required)
 
-In order to fully use the application, you need to set up a backend API. You have two options:
+The backend is hosted on Render and is live as well! It uses a MongoDB Atlas (cloud-based MongoDB) for database management.
 
-1. **Use Your Own Backend**: You can create your own backend following the structure and functionality outlined in the [Uptick-Week_4 repo](https://github.com/Odewale-Emmanuel/Uptick-Week_4). This backend handles user authentication, note management (CRUD operations), and integrates with a MongoDB database.
+You can access the live backend API at:
 
-2. **Clone My Backend**: You can also clone my existing backend from [Uptick-Week_4](https://github.com/Odewale-Emmanuel/Uptick-Week_4). Simply follow the instructions in the backend's README to get it running locally or deploy it to your preferred cloud platform.
+- **Base URL**: [https://uptick-week-4.onrender.com](https://uptick-week-4.onrender.com)
+- **Sign-in endpoint**: [https://uptick-week-4.onrender.com/api/sign-in](https://uptick-week-4.onrender.com/api/sign-in)
 
-### Backend API Features
+The backend handles user authentication, note management (CRUD operations), and integrates with MongoDB Atlas.
 
-The backend provides the following features:
+---
 
-- **User Management**: Allows users to register, sign in, and manage their data (CRUD).
-- **Note Management**: Allows users to create, read, update, and delete their notes.
-- **JWT Authentication**: Secure routes for user-specific data and note management, requiring a valid JWT token.
+## API Routes
+
+### Route without Authentication
+
+#### /api/sign-up
+
+- **POST** `/api/sign-up`
+  - Creates a new user from request body details.
+
+#### /api/sign-in
+
+- **POST** `/api/sign-in`
+  - Signs in a user from request body details.
+
+---
+
+### Route with Authentication
+
+#### /api/user
+
+- **GET** `/api/user`
+
+  - Returns all users, or a single user if `user_id` is provided as a query parameter.
+
+- **DELETE** `/api/user`
+
+  - Deletes a user using `id` from request body and removes all notes attached to the user.
+
+- **PATCH** `/api/user`
+  - Updates user details from request body.
+
+#### /api/note
+
+- **GET** `/api/note`
+
+  - Returns all notes, or all notes for a single user if `user_id` is provided as a query parameter.
+
+- **POST** `/api/note`
+
+  - Creates a new note from request body details.
+
+- **DELETE** `/api/note`
+
+  - Deletes a note using its `id` from request body.
+
+- **PATCH** `/api/note`
+  - Updates note details from request body.
 
 ---
 
@@ -57,6 +102,8 @@ The backend provides the following features:
 
 2. **Backend (Express + MongoDB)**:
 
+   If you want to run the backend locally or modify it, you can still clone and set it up as follows:
+
    - Clone the backend repo:
      ```bash
      git clone https://github.com/Odewale-Emmanuel/Uptick-Week_4.git
@@ -68,21 +115,21 @@ The backend provides the following features:
    - Set up your MongoDB connection in the `config.js` or `.env` file.
    - Run the backend:
      ```bash
-     npm run start
+     npm run dev
      ```
-     The backend will now be running on `http://localhost:5000`.
+     The backend will now be running on `http://localhost:5500`.
 
 3. **Connect Frontend to Backend**:
    - Once both the frontend and backend are running, the React frontend will be able to interact with the backend API (for user management, note CRUD operations, etc.).
-   - Make sure to update the frontend API URL to point to your local or deployed backend if necessary.
+   - For the live app, no further setup is needed, as the frontend already connects to the deployed backend.
 
 ---
 
 ## Technologies Used
 
 - **Frontend**: React, TypeScript, Vite
-- **Backend**: Express.js, MongoDB, Mongoose ODM, JWT Authentication
-- **Database**: MongoDB
+- **Backend**: Express.js, MongoDB (via MongoDB Atlas), Mongoose ODM, JWT Authentication
+- **Database**: MongoDB (hosted on MongoDB Atlas)
 
 ---
 

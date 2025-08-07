@@ -97,7 +97,7 @@ export function SignUpForm({
 
       try {
         const response = await axios.post(
-          "http://localhost:5500/api/sign-up",
+          "https://uptick-week-4.onrender.com/api/sign-up",
           {
             name: `${firstName} ${lastName}`,
             email: email,
