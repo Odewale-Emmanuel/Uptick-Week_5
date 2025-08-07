@@ -6,26 +6,91 @@ import {
   LuLogOut,
   LuUser,
   LuPlus,
+  LuTrash2,
 } from "react-icons/lu";
+import { IoIosHeart, IoMdHeartEmpty } from "react-icons/io";
 import avatar from "@/assets/avatar.jpg";
 import {
   getGreeting,
   dateToISO,
   dateToDayMonth,
-  dateWithTime,
+  // dateWithTime,
 } from "@/utils/date-handler";
 import type { DecodedToken } from "@/types/decoded-token";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Link, useNavigate, type NavigateFunction } from "react-router-dom";
-import { useEffect, useState } from "react";
+import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
 import { LoaderIcon } from "lucide-react";
 import { type JSX } from "react";
 import { cn } from "@/utils/cn";
 import axios from "axios";
 import type { Note } from "@/types/note";
-import { capitalizeWords } from "@/utils/capitalize-words";
 import { truncateString } from "@/utils/string-truncator";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { LiaPenSolid } from "react-icons/lia";
+
+export function AddNewNote() {
+  function handleAddNote() {}
+  return (
+    <Dialog>
+      <form>
+        <DialogTrigger asChild>
+          <Button
+            className="hover:cursor-pointer"
+            onClick={() => console.log("new note btn clicked")}
+          >
+            <LuPlus />
+            Add note
+          </Button>
+        </DialogTrigger>
+        <DialogContent className="sm:max-w-[425px]">
+          <DialogHeader>
+            <DialogTitle className="capitalize">Add new note</DialogTitle>
+            <DialogDescription>
+              Document your memories, journey and experiences
+            </DialogDescription>
+          </DialogHeader>
+          <div className="grid gap-4">
+            <div className="grid gap-3">
+              <Label htmlFor="title">Title</Label>
+              <Input id="title" name="title" />
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor="content">Content</Label>
+              <Textarea
+                id="content"
+                name="content"
+                rows={5}
+                placeholder="express yourself, write your thoughts"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <DialogClose asChild>
+              <Button variant="outline">Cancel</Button>
+            </DialogClose>
+            <Button type="submit" variant="default" onClick={handleAddNote}>
+              Add Note
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </form>
+    </Dialog>
+  );
+}
 
 function UnauthenticatedUser(): JSX.Element {
   const navigate: NavigateFunction = useNavigate();
@@ -49,21 +114,21 @@ function UnauthenticatedUser(): JSX.Element {
   );
 }
 
-function Loading({ message }: { message?: string }): JSX.Element {
-  return (
-    <div className="flex items-center justify-center w-full h-full text-gray-800">
-      <span className="inline-flex flex-col items-center gap-1">
-        <LoaderIcon
-          size={30}
-          className="animate-spin text-black dark:text-white"
-        />
-        <span className="text-gray-700 dark:text-gray-500 text-sm">
-          {message}
-        </span>
-      </span>
-    </div>
-  );
-}
+// function Loading({ message }: { message?: string }): JSX.Element {
+//   return (
+//     <div className="flex items-center justify-center w-full h-full text-gray-800">
+//       <span className="inline-flex flex-col items-center gap-1">
+//         <LoaderIcon
+//           size={30}
+//           className="animate-spin text-black dark:text-white"
+//         />
+//         <span className="text-gray-700 dark:text-gray-500 text-sm">
+//           {message}
+//         </span>
+//       </span>
+//     </div>
+//   );
+// }
 
 function Tag({
   name,
@@ -83,12 +148,14 @@ function NoteCard({
   note,
   className,
   longNote = false,
+  setNotePreview,
   onClick,
   handleDelete,
 }: {
   note: Note;
   className?: string;
   longNote?: boolean;
+  setNotePreview?: Dispatch<SetStateAction<boolean>>;
   onClick?: (s?: string) => any;
   handleDelete: (s?: string) => any;
 }): JSX.Element {
@@ -100,39 +167,54 @@ function NoteCard({
   const updatedAt = note.updated_at;
 
   function handleClick() {
-    if (onClick) {
+    if (onClick && setNotePreview) {
       onClick(_id);
+      setNotePreview((prev) => !prev);
     }
   }
 
-  function handlDeleteClick() {
+  function handleDeleteClick() {
     handleDelete(_id);
+  }
+
+  function handleUpdateClick() {
+    console.log("this note has been updated");
+  }
+
+  function handleFavoriteClick() {
+    console.log("favorited this note");
   }
 
   return (
     <div
       className={cn(
-        "flex flex-col px-4 pb-4 pt-3 bg-black/5 dark:bg-black/15 rounded-lg darki:bg-pink-800 max-w-[calc(var(--spacing)*82)] w-full",
+        "flex flex-col gap-2 group px-4 pb-4 pt-3 bg-black/5 dark:bg-black/15 rounded-xl max-w-[calc(var(--spacing)*82)] w-full",
         className
       )}
       onClick={handleClick}
     >
-      <span>
-        {" "}
-        <time
-          dateTime={`${dateToISO(new Date(updatedAt))}`}
-          className={cn("font-semibold text-sm")}
+      <header>
+        <span>
+          {" "}
+          <time
+            dateTime={`${dateToISO(new Date(updatedAt))}`}
+            className={cn("font-semibold text-sm")}
+          >
+            {dateToDayMonth(new Date(updatedAt))}
+          </time>
+        </span>
+        <h2
+          className={cn("font-bold capitalize text-black/90 dark:text-white")}
         >
-          {dateToDayMonth(new Date(updatedAt))}
-        </time>
-      </span>
-      <h2 className={cn("font-bold mb-1.5")}>
-        {truncateString(capitalizeWords(title), 27, "characters")}
-      </h2>
-      <p className={cn("text-sm text-justify dark:text-gray-300")}>
+          {truncateString(title, 27, "characters")}
+        </h2>
+      </header>
+      <p
+        className={cn("text-sm text-balance text-black/80 dark:text-gray-300")}
+      >
         {longNote
-          ? truncateString(capitalizeWords(content), 50, "words")
-          : truncateString(capitalizeWords(content), 15, "words")}
+          ? truncateString(content, 50, "words")
+          : truncateString(content, 15, "words")}
       </p>
       {tags.length > 0 && (
         <div className="inline-flex gap-1 sm:gap-2">
@@ -142,6 +224,30 @@ function NoteCard({
           <Tag name={`+${tags.length - 2} more`} key={"more tags"} />
         </div>
       )}
+      <div className="flex gap-2 mt-1 justify-end items-center">
+        <span
+          className="h-8 aspect-square rounded-full hover:bg-white hover:cursor-pointer inline-flex items-center justify-center bg-white/30 dark:bg-white/1 dark:hover:bg-white/10 border hiddeXn group-hover:inline-flex"
+          onClick={handleDeleteClick}
+        >
+          <LuTrash2 className="text-lg text-black/70 dark:text-white/90" />
+        </span>
+        <span
+          className="h-8 aspect-square rounded-full hover:bg-white hover:cursor-pointer inline-flex items-center justify-center bg-white/30 dark:bg-white/1 dark:hover:bg-white/10 border"
+          onClick={handleUpdateClick}
+        >
+          <LiaPenSolid className="text-xl text-black/70 dark:text-white/90" />
+        </span>
+        <span
+          className="h-8 aspect-square rounded-full hover:bg-white hover:cursor-pointer inline-flex items-center justify-center bg-white/30 dark:bg-white/1 dark:hover:bg-white/10 border"
+          onClick={handleFavoriteClick}
+        >
+          {favorite ? (
+            <IoIosHeart className="text-xl text-black/70 dark:text-white/90" />
+          ) : (
+            <IoMdHeartEmpty className="text-xl text-black/70 dark:text-white/90" />
+          )}
+        </span>
+      </div>
     </div>
   );
 }
@@ -271,13 +377,7 @@ function Dashboard(): JSX.Element {
         >
           <header>
             <h1 className="font-normal text-2xl sm:text-3xl">My Notes</h1>
-            <Button
-              className="hover:cursor-pointer"
-              onClick={() => console.log("new note btn clicked")}
-            >
-              <LuPlus />
-              Add note
-            </Button>
+            <AddNewNote />
           </header>
           <div className="grid grid-cols-[repaet(4, auto)] grid-flow-row-dense gap-4 grow">
             {userNote &&
@@ -286,6 +386,7 @@ function Dashboard(): JSX.Element {
                   key={note._id}
                   note={note}
                   longNote={!notePreview}
+                  setNotePreview={setNotePreview}
                   handleDelete={() => console.log("deleted")}
                   className="align-super"
                 />
