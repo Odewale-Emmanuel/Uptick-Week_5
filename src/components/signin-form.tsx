@@ -50,13 +50,11 @@ export function SignInForm({
       setLoading(true);
 
       try {
-        const response: Axios.AxiosXHR<any> = await axios.post(
-          "https://uptick-week-4.onrender.com/api/sign-in",
-          {
+        const response: Axios.AxiosXHR<{ accessToken: string }> =
+          await axios.post("https://uptick-week-4.onrender.com/api/sign-in", {
             email: email,
             password: password,
-          }
-        );
+          });
 
         if (!(response.status == 200)) {
           toast.error("Failed to sign in user");

@@ -279,7 +279,7 @@ function Dashboard(): JSX.Element {
               Add note
             </Button>
           </header>
-          <div className="grid grid-cols-[repaet(4, auto)] grid-flow-row-dense bg-pink-200 gap-4 grow">
+          <div className="grid grid-cols-[repaet(4, auto)] grid-flow-row-dense gap-4 grow">
             {userNote &&
               userNote.map((note: Note) => (
                 <NoteCard
