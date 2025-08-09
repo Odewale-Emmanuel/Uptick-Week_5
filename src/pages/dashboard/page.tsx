@@ -107,12 +107,13 @@ function Dashboard(): JSX.Element {
   const [notePreview, setNotePreview] = useState(false);
   // const { user, invalidToken, tokenNotFound } = useAuth();
   const [userNotes, dispatch] = useReducer(noteReducer, []);
-  const { user, tokenNotFound, invalidToken, notes, loadingNote } = useNotes();
+  const { user, authToken, tokenNotFound, invalidToken, notes, loadingNote } =
+    useNotes();
   const navigate: NavigateFunction = useNavigate();
 
   useEffect(() => {
     dispatch({ type: "set_note", payload: notes });
-  }, [notes]);
+  }, [notes, authToken]);
 
   if (invalidToken || tokenNotFound) {
     return <UnauthenticatedUser />;
