@@ -1,4 +1,3 @@
-import { jwtDecode } from "jwt-decode";
 import {
   LuNotebookPen,
   LuSettings,
@@ -6,26 +5,18 @@ import {
   LuLogOut,
   LuUser,
   LuPlus,
-  LuTrash2,
 } from "react-icons/lu";
-import { IoIosHeart, IoMdHeartEmpty } from "react-icons/io";
 import avatar from "@/assets/avatar.jpg";
 import {
   getGreeting,
-  dateToISO,
-  dateToDayMonth,
   // dateWithTime,
 } from "@/utils/date-handler";
-import type { DecodedToken } from "@/types/decoded-token";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Link, useNavigate, type NavigateFunction } from "react-router-dom";
-import { useEffect, useState, type Dispatch, type SetStateAction } from "react";
-import { LoaderIcon } from "lucide-react";
+import { useEffect, useState } from "react";
 import { type JSX } from "react";
 import { cn } from "@/utils/cn";
-import axios from "axios";
 import type { Note } from "@/types/note";
-import { truncateString } from "@/utils/string-truncator";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -40,10 +31,16 @@ import {
   DialogTrigger,
 } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
-import { LiaPenSolid } from "react-icons/lia";
+import { UnauthenticatedUser } from "@/components/unauthenticated-user";
+import { useReducer } from "react";
+import { useNotes } from "@/hooks/use-note";
+import { noteReducer } from "@/reducers/note-reducers";
+import { Loading } from "@/components/loader";
+import { NoteCard } from "@/components/note-card";
 
 export function AddNewNote() {
   function handleAddNote() {}
+
   return (
     <Dialog>
       <form>
@@ -53,7 +50,7 @@ export function AddNewNote() {
             onClick={() => console.log("new note btn clicked")}
           >
             <LuPlus />
-            Add note
+            Add Note
           </Button>
         </DialogTrigger>
         <DialogContent className="sm:max-w-[425px]">
@@ -66,7 +63,20 @@ export function AddNewNote() {
           <div className="grid gap-4">
             <div className="grid gap-3">
               <Label htmlFor="title">Title</Label>
-              <Input id="title" name="title" />
+              <Input
+                id="title"
+                name="title"
+                required={true}
+                placeholder="how my day went"
+              />
+            </div>
+            <div className="grid gap-3">
+              <Label htmlFor="tags">Tags</Label>
+              <Input
+                id="tags"
+                name="tags"
+                placeholder="#games #fun #assignment"
+              />
             </div>
             <div className="grid gap-3">
               <Label htmlFor="content">Content</Label>
@@ -75,6 +85,7 @@ export function AddNewNote() {
                 name="content"
                 rows={5}
                 placeholder="express yourself, write your thoughts"
+                required={true}
               />
             </div>
           </div>
@@ -92,212 +103,19 @@ export function AddNewNote() {
   );
 }
 
-function UnauthenticatedUser(): JSX.Element {
-  const navigate: NavigateFunction = useNavigate();
-  setTimeout(() => {
-    navigate("/sign-in");
-  }, 3000);
-
-  return (
-    <div className="flex items-center justify-center w-full h-full text-gray-800">
-      <span className="inline-flex flex-col items-center gap-1">
-        <LoaderIcon
-          size={30}
-          className="animate-spin text-black dark:text-white"
-        />
-        <span className="text-gray-700 dark:text-gray-500 text-sm">
-          <span className="font-bold">Unathenticated user</span> Redirecting to{" "}
-          <span className="font-bold">"/sign-in"</span> page now!
-        </span>
-      </span>
-    </div>
-  );
-}
-
-// function Loading({ message }: { message?: string }): JSX.Element {
-//   return (
-//     <div className="flex items-center justify-center w-full h-full text-gray-800">
-//       <span className="inline-flex flex-col items-center gap-1">
-//         <LoaderIcon
-//           size={30}
-//           className="animate-spin text-black dark:text-white"
-//         />
-//         <span className="text-gray-700 dark:text-gray-500 text-sm">
-//           {message}
-//         </span>
-//       </span>
-//     </div>
-//   );
-// }
-
-function Tag({
-  name,
-  className,
-}: {
-  name: string;
-  className?: string;
-}): JSX.Element {
-  return (
-    <span className={cn("inline-block px-2.5 py-2 rounded-md", className)}>
-      {name}
-    </span>
-  );
-}
-
-function NoteCard({
-  note,
-  className,
-  longNote = false,
-  setNotePreview,
-  onClick,
-  handleDelete,
-}: {
-  note: Note;
-  className?: string;
-  longNote?: boolean;
-  setNotePreview?: Dispatch<SetStateAction<boolean>>;
-  onClick?: (s?: string) => any;
-  handleDelete: (s?: string) => any;
-}): JSX.Element {
-  const _id = note._id;
-  const title = note.title;
-  const content = note.content;
-  const favorite = note.favorite;
-  const tags = note.tags;
-  const updatedAt = note.updated_at;
-
-  function handleClick() {
-    if (onClick && setNotePreview) {
-      onClick(_id);
-      setNotePreview((prev) => !prev);
-    }
-  }
-
-  function handleDeleteClick() {
-    handleDelete(_id);
-  }
-
-  function handleUpdateClick() {
-    console.log("this note has been updated");
-  }
-
-  function handleFavoriteClick() {
-    console.log("favorited this note");
-  }
-
-  return (
-    <div
-      className={cn(
-        "flex flex-col gap-2 group px-4 pb-4 pt-3 bg-black/5 dark:bg-black/15 rounded-xl max-w-[calc(var(--spacing)*82)] w-full",
-        className
-      )}
-      onClick={handleClick}
-    >
-      <header>
-        <span>
-          {" "}
-          <time
-            dateTime={`${dateToISO(new Date(updatedAt))}`}
-            className={cn("font-semibold text-sm")}
-          >
-            {dateToDayMonth(new Date(updatedAt))}
-          </time>
-        </span>
-        <h2
-          className={cn("font-bold capitalize text-black/90 dark:text-white")}
-        >
-          {truncateString(title, 27, "characters")}
-        </h2>
-      </header>
-      <p
-        className={cn("text-sm text-balance text-black/80 dark:text-gray-300")}
-      >
-        {longNote
-          ? truncateString(content, 50, "words")
-          : truncateString(content, 15, "words")}
-      </p>
-      {tags.length > 0 && (
-        <div className="inline-flex gap-1 sm:gap-2">
-          {tags.splice(0, 3).map((tag, index) => (
-            <Tag name={tag} key={index} />
-          ))}
-          <Tag name={`+${tags.length - 2} more`} key={"more tags"} />
-        </div>
-      )}
-      <div className="flex gap-2 mt-1 justify-end items-center">
-        <span
-          className="h-8 aspect-square rounded-full hover:bg-white hover:cursor-pointer inline-flex items-center justify-center bg-white/30 dark:bg-white/1 dark:hover:bg-white/10 border hiddeXn group-hover:inline-flex"
-          onClick={handleDeleteClick}
-        >
-          <LuTrash2 className="text-lg text-black/70 dark:text-white/90" />
-        </span>
-        <span
-          className="h-8 aspect-square rounded-full hover:bg-white hover:cursor-pointer inline-flex items-center justify-center bg-white/30 dark:bg-white/1 dark:hover:bg-white/10 border"
-          onClick={handleUpdateClick}
-        >
-          <LiaPenSolid className="text-xl text-black/70 dark:text-white/90" />
-        </span>
-        <span
-          className="h-8 aspect-square rounded-full hover:bg-white hover:cursor-pointer inline-flex items-center justify-center bg-white/30 dark:bg-white/1 dark:hover:bg-white/10 border"
-          onClick={handleFavoriteClick}
-        >
-          {favorite ? (
-            <IoIosHeart className="text-xl text-black/70 dark:text-white/90" />
-          ) : (
-            <IoMdHeartEmpty className="text-xl text-black/70 dark:text-white/90" />
-          )}
-        </span>
-      </div>
-    </div>
-  );
-}
-
 function Dashboard(): JSX.Element {
   const [notePreview, setNotePreview] = useState(false);
-  const [userNote, setUserNote] = useState<Note[] | any>(null);
-  const authToken: string | null | undefined =
-    localStorage.getItem("authToken");
+  // const { user, invalidToken, tokenNotFound } = useAuth();
+  const [userNotes, dispatch] = useReducer(noteReducer, []);
+  const { user, tokenNotFound, invalidToken, notes, loadingNote } = useNotes();
   const navigate: NavigateFunction = useNavigate();
-  let user: DecodedToken | null = null;
 
   useEffect(() => {
-    handleUserNotes();
-  }, []);
+    dispatch({ type: "set_note", payload: notes });
+  }, [notes]);
 
-  if (!authToken) {
+  if (invalidToken || tokenNotFound) {
     return <UnauthenticatedUser />;
-  }
-
-  try {
-    user = jwtDecode<DecodedToken>(authToken as string);
-  } catch (error: unknown) {
-    if (error) {
-      return <UnauthenticatedUser />;
-    }
-  }
-
-  async function handleUserNotes() {
-    try {
-      const response = await axios.get<{ notes: Note[] }>(
-        `https://uptick-week-4.onrender.com/api/note?user_id=${user?._id}`,
-        {
-          headers: {
-            Authorization: `Bearer ${authToken}`,
-          },
-        }
-      );
-
-      // Access the notes from the response data
-      const userNotes = response.data;
-      setUserNote(userNotes);
-      console.log(userNotes);
-    } catch (error) {
-      if (error instanceof Error) {
-        console.error(error.message);
-      } else {
-        console.error("Unknown error occurred");
-      }
-    }
   }
 
   function handleLogout(): void {
@@ -375,13 +193,20 @@ function Dashboard(): JSX.Element {
             !notePreview && "w-full"
           )}
         >
-          <header>
+          <header className="flex flex-col gap-4 sm:gap-6">
             <h1 className="font-normal text-2xl sm:text-3xl">My Notes</h1>
             <AddNewNote />
           </header>
-          <div className="grid grid-cols-[repaet(4, auto)] grid-flow-row-dense gap-4 grow">
-            {userNote &&
-              userNote.map((note: Note) => (
+          <div
+            className={cn(
+              "grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))]  grid-rows-2 grid-flow-row-dense gap-4",
+              (loadingNote || !userNotes.length) &&
+                "flex items-center justify-center"
+            )}
+          >
+            {loadingNote && <Loading message="loading notes..." />}
+            {userNotes.length >= 1 &&
+              userNotes.map((note: Note) => (
                 <NoteCard
                   key={note._id}
                   note={note}
@@ -391,6 +216,11 @@ function Dashboard(): JSX.Element {
                   className="align-super"
                 />
               ))}
+            {!loadingNote && !userNotes.length && (
+              <p className="w-full p-4 sm:p-6 rounded-lg text-sm bg-black/3 dark:bg-black/10 ">
+                Save your Thoughts, Ideas and Experiences...
+              </p>
+            )}
           </div>
         </div>
         <div
