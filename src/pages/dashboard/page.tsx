@@ -200,7 +200,7 @@ function Dashboard(): JSX.Element {
           </header>
           <div
             className={cn(
-              "grid grid-cols-[repeat(auto-fill,minmax(250px,1fr))]  grid-rows-2 grid-flow-row-dense gap-4",
+              "columns-1 sm:columns-2 lg:columns-3 gap-4",
               (loadingNote || !userNotes.length) &&
                 "flex items-center justify-center"
             )}
@@ -214,7 +214,7 @@ function Dashboard(): JSX.Element {
                   longNote={!notePreview}
                   setNotePreview={setNotePreview}
                   handleDelete={() => console.log("deleted")}
-                  className="align-super"
+                  className="break-inside-avoid mb-4"
                 />
               ))}
             {!loadingNote && !userNotes.length && (

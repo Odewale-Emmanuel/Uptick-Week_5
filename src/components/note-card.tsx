@@ -53,7 +53,7 @@ export function NoteCard({
   return (
     <div
       className={cn(
-        "flex flex-col gap-2 group px-4 pb-4 pt-3 bg-black/5 dark:bg-black/15 rounded-xl max-w-[calc(var(--spacing)*82)] w-full",
+        "flex flex-col gap-2 group px-4 pb-4 pt-3 bg-black/5 dark:bg-black/15 rounded-xl w-full",
         className
       )}
       onClick={handleClick}
