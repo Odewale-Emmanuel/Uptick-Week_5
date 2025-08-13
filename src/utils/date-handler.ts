@@ -40,4 +40,9 @@ function dateWithTime(date: Date = new Date()): string {
   };
   return date.toLocaleString("en-GB", options);
 }
-export { getGreeting, dateToISO, dateWithTime, dateToDayMonth };
+
+function getTimestamp(date: Date | string | number): number {
+  return new Date(date).getTime();
+}
+
+export { getGreeting, dateToISO, dateWithTime, dateToDayMonth, getTimestamp };

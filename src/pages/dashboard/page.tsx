@@ -4,119 +4,46 @@ import {
   LuSearch,
   LuLogOut,
   LuUser,
-  LuPlus,
 } from "react-icons/lu";
 import avatar from "@/assets/avatar.jpg";
-import {
-  getGreeting,
-  // dateWithTime,
-} from "@/utils/date-handler";
+import { getGreeting, getTimestamp } from "@/utils/date-handler";
 import { ModeToggle } from "@/components/mode-toggle";
 import { Link, useNavigate, type NavigateFunction } from "react-router-dom";
-import { useEffect, useState } from "react";
 import { type JSX } from "react";
 import { cn } from "@/utils/cn";
 import type { Note } from "@/types/note";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Textarea } from "@/components/ui/textarea";
 import { UnauthenticatedUser } from "@/components/unauthenticated-user";
-import { useReducer } from "react";
-import { useNotes } from "@/hooks/use-note";
+import { useReducer, useEffect, useState } from "react";
+import { useUser } from "@/hooks/use-user";
 import { noteReducer } from "@/reducers/note-reducers";
 import { Loading } from "@/components/loader";
 import { NoteCard } from "@/components/note-card";
-
-export function AddNewNote() {
-  function handleAddNote() {}
-
-  return (
-    <Dialog>
-      <form>
-        <DialogTrigger asChild>
-          <Button
-            className="hover:cursor-pointer"
-            onClick={() => console.log("new note btn clicked")}
-          >
-            <LuPlus />
-            Add Note
-          </Button>
-        </DialogTrigger>
-        <DialogContent className="sm:max-w-[425px]">
-          <DialogHeader>
-            <DialogTitle className="capitalize">Add new note</DialogTitle>
-            <DialogDescription>
-              Document your memories, journey and experiences
-            </DialogDescription>
-          </DialogHeader>
-          <div className="grid gap-4">
-            <div className="grid gap-3">
-              <Label htmlFor="title">Title</Label>
-              <Input
-                id="title"
-                name="title"
-                required={true}
-                placeholder="how my day went"
-              />
-            </div>
-            <div className="grid gap-3">
-              <Label htmlFor="tags">Tags</Label>
-              <Input
-                id="tags"
-                name="tags"
-                placeholder="#games #fun #assignment"
-              />
-            </div>
-            <div className="grid gap-3">
-              <Label htmlFor="content">Content</Label>
-              <Textarea
-                id="content"
-                name="content"
-                rows={5}
-                placeholder="express yourself, write your thoughts"
-                required={true}
-              />
-            </div>
-          </div>
-          <DialogFooter>
-            <DialogClose asChild>
-              <Button variant="outline">Cancel</Button>
-            </DialogClose>
-            <Button type="submit" variant="default" onClick={handleAddNote}>
-              Add Note
-            </Button>
-          </DialogFooter>
-        </DialogContent>
-      </form>
-    </Dialog>
-  );
-}
+import SEO from "@/components/seo";
+import { useLocation } from "react-router-dom";
+import { AddNewNote } from "@/components/add-note";
+import { PreviewNote } from "@/components/note-preview";
+import { toast } from "react-toastify";
+// import axios from "axios";
 
 function Dashboard(): JSX.Element {
-  const [notePreview, setNotePreview] = useState(false);
-  // const { user, invalidToken, tokenNotFound } = useAuth();
+  const [previewNoteStatus, setPreviewNoteStatus] = useState(false);
+  const [previewNote, setPreviewNote] = useState<Note | null>(null);
   const [userNotes, dispatch] = useReducer(noteReducer, []);
   const { user, authToken, tokenNotFound, invalidToken, notes, loadingNote } =
-    useNotes();
+    useUser();
   const navigate: NavigateFunction = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     dispatch({ type: "set_note", payload: notes });
-  }, [notes, authToken]);
+  }, [notes, authToken, user]);
 
   if (invalidToken || tokenNotFound) {
     return <UnauthenticatedUser />;
+  }
+
+  if (!user) {
+    <Loading message="Loading user dashboard..." />;
   }
 
   function handleLogout(): void {
@@ -124,12 +51,83 @@ function Dashboard(): JSX.Element {
     navigate("/sign-in");
   }
 
+  function handleUpdateNotes(notes: Note[]): void {
+    dispatch({ type: "set_note", payload: notes });
+  }
+
+  function handleUpdateNote(note: Note): void {
+    dispatch({ type: "update_note", payload: note });
+  }
+
+  // function handleUpdateFavorite(note: Note): void {
+  //   dispatch({ type: "update_note", payload: note });
+  // }
+
+  function handleNoteClick(note: Note): void {
+    setPreviewNoteStatus(true);
+    setPreviewNote(note);
+  }
+
+  function handleDeleteNote(id: string): void {
+    if (previewNote?._id === id) {
+      toast("kindly close preview before deleting note");
+      return;
+    } else {
+      try {
+        async function fetchApi() {
+          await fetch(
+            `https://uptick-week-4.onrender.com/api/note?note_id=${id}`,
+            {
+              method: "DELETE",
+              headers: {
+                Authorization: `Bearer ${authToken}`,
+                "Content-Type": "application/json",
+              },
+              body: JSON.stringify({
+                note_id: id,
+              }),
+            }
+          );
+        }
+
+        fetchApi();
+
+        dispatch({ type: "delete_note", payload: id });
+        toast.success("note deleted successfully");
+      } catch (error: unknown) {
+        if (error) {
+          toast.error(
+            "an error occurred while deleting your note from the database"
+          );
+          throw error;
+          return;
+        }
+      }
+      dispatch({ type: "delete_note", payload: id });
+    }
+  }
+
+  function handleClosePreview() {
+    setPreviewNoteStatus(false);
+    setPreviewNote(null);
+  }
+
   return (
-    <div className="grid grid-cols-5 items-stretch min-h-svh">
-      <aside className="flex flex-col bg-[#fafafa] dark:bg-[#171717] p-4   gap-4 sm:gap-6 col-span-1">
+    <div className="grid grid-cols-5 items-stretch h-svh overflow-hidden">
+      <SEO
+        title={`${user?.name || "User"} Dashboard`}
+        description="StarkNotes User Dashboard"
+        url={`https://starknote.vercel.app${location.pathname}`}
+      />
+      <aside
+        className={cn(
+          "flex flex-col bg-[#fafafa] dark:bg-[#171717] p-4 h-screen gap-4 sm:gap-6 col-span-1",
+          "overflow-hidden overflow-y-auto [&::-webkit-scrollbar]:w-0"
+        )}
+      >
         <h1 className="sr-only">{`${user?.name[0]} starknotes dashboard`}</h1>
         <div className="inline-flex flex-col gap-2 sm:gap-4">
-          <span className="inline-flex items-center flex-col rounded-lg p-2 sm:p-3 gap-1 sm:gap-2 bg-white dark:bg-white/5">
+          <span className="relative inline-flex items-center flex-col rounded-lg p-2 sm:p-3 gap-1 sm:gap-2 bg-white dark:bg-white/5">
             <span className="aspect-square group inline-flex w-full items-center justify-center bg-white/10">
               <span className="absolute z-0">
                 <LuUser className=" text-xl" />
@@ -187,50 +185,73 @@ function Dashboard(): JSX.Element {
         </div>
       </aside>
 
-      <section className="flex col-span-4">
+      <section
+        className={cn(
+          "col-span-4 h-screen overflow-hidden",
+          previewNoteStatus ? "grid grid-cols-3" : "flex"
+        )}
+      >
         <div
           className={cn(
-            "min-w-[calc(var(--spacing)*32)] flex flex-col gap-6 bg-white dark:bg-white/10 p-4 sm:p-6",
-            !notePreview && "w-full"
+            "flex flex-col gap-6 bg-white h-screen dark:bg-white/10 p-4 sm:p-6",
+            !previewNoteStatus ? "w-full" : "col-span-3 lg:col-span-1"
           )}
         >
           <header className="flex flex-col gap-4 sm:gap-6">
             <h1 className="font-normal text-2xl sm:text-3xl">My Notes</h1>
-            <AddNewNote />
+            <AddNewNote updateNote={handleUpdateNotes} />
           </header>
+
           <div
             className={cn(
-              "columns-1 sm:columns-2 lg:columns-3 gap-4",
-              (loadingNote || !userNotes.length) &&
-                "flex items-center justify-center"
+              "grow-1 overflow-hidden overflow-y-auto",
+              "[&::-webkit-scrollbar]:w-0"
             )}
           >
-            {loadingNote && <Loading message="loading notes..." />}
-            {userNotes.length >= 1 &&
-              userNotes.map((note: Note) => (
-                <NoteCard
-                  key={note._id}
-                  note={note}
-                  longNote={!notePreview}
-                  setNotePreview={setNotePreview}
-                  handleDelete={() => console.log("deleted")}
-                  className="break-inside-avoid mb-4"
-                />
-              ))}
-            {!loadingNote && !userNotes.length && (
-              <p className="w-full p-4 sm:p-6 rounded-lg text-sm bg-black/3 dark:bg-black/10 ">
-                Save your Thoughts, Ideas and Experiences...
-              </p>
-            )}
+            <div
+              className={cn(
+                "columns-1 sm:columns-2 lg:columns-3 gap-4 grow-1 overflow-hidden overflow-y-auto w-full",
+                "[&::-webkit-scrollbar]:w-0",
+                previewNoteStatus && "columns-xs sm:columns-xs lg:columns-xs",
+                (loadingNote || !userNotes.length) &&
+                  "flex items-start justify-center"
+              )}
+            >
+              {loadingNote && <Loading message="loading notes..." />}
+              {userNotes.length >= 1 &&
+                [...userNotes]
+                  .sort(
+                    (a, b) =>
+                      getTimestamp(b.updated_at) - getTimestamp(a.updated_at)
+                  )
+                  .map((note: Note) => (
+                    <NoteCard
+                      key={note._id}
+                      note={note}
+                      longNote={!previewNoteStatus}
+                      onClick={() => handleNoteClick(note)}
+                      handleDelete={handleDeleteNote}
+                      handleEdit={handleUpdateNote}
+                      // handleFavorite={handleUpdateFavorite}
+                      className={cn(
+                        "break-inside-avoid mb-4",
+                        note._id === previewNote?._id &&
+                          "bg-black/10 dark:bg-black/35 "
+                      )}
+                    />
+                  ))}
+              {!loadingNote && !userNotes.length && (
+                <p className="w-full p-4 sm:p-6 rounded-lg text-sm bg-black/3 dark:bg-black/10 ">
+                  Save your Thoughts, Ideas and Experiences...
+                </p>
+              )}
+            </div>
           </div>
         </div>
-        <div
-          className={cn(
-            notePreview ? "grow-1 border-s-2 dark:bg-white/10" : "hidden"
-          )}
-        >
-          {/* {users && users.map()} */}
-        </div>
+
+        {previewNoteStatus && (
+          <PreviewNote note={previewNote} closePreview={handleClosePreview} />
+        )}
       </section>
     </div>
   );

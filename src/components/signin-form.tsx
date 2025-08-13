@@ -34,15 +34,8 @@ export function SignInForm({
   async function handleSignIn(e: React.MouseEvent<HTMLButtonElement>) {
     e.preventDefault();
 
-    if (!emailCheck) {
-      toast.error("Invalid email: please insert a valid email address");
-      return;
-    }
-
-    if (!passwordCheck) {
-      toast.error(
-        "Invalid password: must contain a special character, an upper and lowercase letter, and a number."
-      );
+    if (!emailCheck || !passwordCheck) {
+      toast.error("Invalid email or password");
       return;
     }
 

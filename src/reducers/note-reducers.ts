@@ -1,7 +1,6 @@
 import type { Note } from "@/types/note";
-// import { useReducer } from "react";
 
-type ActionType =
+export type ActionType =
   | { type: "set_note"; payload: Note[] }
   | { type: "add_note"; payload: Note }
   | { type: "update_note"; payload: Note }
@@ -31,25 +30,3 @@ export function noteReducer(notes: Note[], action: ActionType): Note[] {
       throw Error(`Unknown action: ${action}`);
   }
 }
-
-// export function useNoteReducer() {
-//   const [userNote, dispatch] = useReducer(noteReducer, []);
-
-//   const setNote = (note: Note[]) => {
-//     dispatch({ type: "set_note", payload: note });
-//   };
-
-//   const addNote = (note: Note) => {
-//     dispatch({ type: "add_note", payload: note });
-//   };
-
-//   const updateNote = (note: Note) => {
-//     dispatch({ type: "update_note", payload: note });
-//   };
-
-//   const deleteNote = (_id: string) => {
-//     dispatch({ type: "delete_note", payload: _id });
-//   };
-
-//   return { userNote, setNote, addNote, updateNote, deleteNote };
-// }

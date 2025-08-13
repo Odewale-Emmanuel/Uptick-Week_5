@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import heroImage from "@/assets/hero-notes.jpg";
+import heroImage from "@/assets/starknotes.png";
 import { useNavigate } from "react-router-dom";
 
 const Hero = () => {
@@ -52,11 +52,11 @@ const Hero = () => {
           </div>
 
           <div className="relative animate-fade-in animation-delay-300">
-            <div className="relative bg-white rounded-lg shadow-large p-8 border border-border">
+            <div className="relative bg-white dark:bg-black/10 rounded-lg shadow-large p-8 border border-border">
               <img
                 src={heroImage}
                 alt="StarkNotes Interface"
-                className="w-full h-auto rounded-md"
+                className="w-full h-auto aspect-video object-cover rounded-md"
               />
               <div className="absolute inset-0 bg-gradient-to-t from-white/10 to-transparent rounded-lg"></div>
             </div>

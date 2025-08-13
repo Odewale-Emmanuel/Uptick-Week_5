@@ -4,7 +4,7 @@ import { jwtDecode } from "jwt-decode";
 import type { DecodedToken } from "@/types/decoded-token";
 import axios from "axios";
 
-export function useNotes() {
+export function useUser() {
   const [notes, setNotes] = useState<Note[]>([]);
   const [loadingNote, setLoadingNote] = useState<boolean>(false);
   const [noteError, setNoteError] = useState<string | boolean | null>(false);

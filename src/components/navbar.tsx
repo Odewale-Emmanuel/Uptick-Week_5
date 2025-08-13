@@ -1,6 +1,7 @@
 import { cn } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import { ModeToggle } from "@/components/mode-toggle";
+import logo from "@/assets/starknotes-logo-large.png";
 
 function NavBar() {
   return (
@@ -10,9 +11,18 @@ function NavBar() {
       )}
     >
       <div className="flex items-center justify-between">
-        <Link to={"/"} className="text-lg font-bold">
-          StarkNotes
-        </Link>
+        <div className="inline-flex gap-1 items-center">
+          <Link to={"/"} className="text-lg font-bold">
+            <img
+              src={logo}
+              alt="starknotes logo"
+              className="aspect-square w-6"
+            />
+          </Link>
+          <Link to={"/"} className="text-lg font-bold hidden sm:inline-block">
+            StarkNotes
+          </Link>
+        </div>
         <ul className="inline-flex items-center space-x-4">
           <li>
             <Link
