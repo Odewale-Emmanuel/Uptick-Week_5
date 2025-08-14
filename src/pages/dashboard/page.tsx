@@ -27,7 +27,11 @@ import { toast } from "react-toastify";
 function Dashboard(): JSX.Element {
   const [previewNoteStatus, setPreviewNoteStatus] = useState(false);
   const [previewNote, setPreviewNote] = useState<Note | null>(null);
-  const [userNotes, dispatch] = useReducer(noteReducer, []);
+  const [noteState, dispatch] = useReducer(noteReducer, {
+    notes: [],
+    filteredNotes: [],
+    searchTerm: "",
+  });
   const { user, authToken, tokenNotFound, invalidToken, notes, loadingNote } =
     useUser();
   const navigate: NavigateFunction = useNavigate();
@@ -37,7 +41,11 @@ function Dashboard(): JSX.Element {
     const html: HTMLCollectionOf<HTMLElement> =
       document.getElementsByTagName("html");
     html[0].classList.add("overflow-hidden");
-    dispatch({ type: "set_note", payload: notes });
+    dispatch({
+      type: "set_note",
+      payload: { notes: notes, filteredNotes: notes, searchTerm: "" },
+    });
+    console.log(noteState);
   }, [notes, authToken, user]);
 
   if (invalidToken || tokenNotFound) {
@@ -53,8 +61,15 @@ function Dashboard(): JSX.Element {
     navigate("/sign-in");
   }
 
+  function handleSearch(searchTerm: string) {
+    dispatch({ type: "search_notes", payload: searchTerm });
+  }
+
   function handleUpdateNotes(notes: Note[]): void {
-    dispatch({ type: "set_note", payload: notes });
+    dispatch({
+      type: "set_note",
+      payload: { notes: notes, filteredNotes: notes, searchTerm: "" },
+    });
   }
 
   function handleUpdateNote(note: Note): void {
@@ -152,6 +167,7 @@ function Dashboard(): JSX.Element {
             <input
               type="search"
               placeholder="Search notes..."
+              onChange={(e) => handleSearch(e.target.value)}
               className="border-0 px-2 ps-7 ring-0 outline-0 shadow-transparent w-full h-full focus-visible:ring-transparent focus-within:ring-transparent focus:ring-transparent"
             />
           </span>
@@ -213,13 +229,13 @@ function Dashboard(): JSX.Element {
                 "columns-1 sm:columns-2 lg:columns-3 gap-4 overflow-hidden overflow-y-auto w-full",
                 "[&::-webkit-scrollbar]:w-0",
                 previewNoteStatus && "columns-xs sm:columns-xs lg:columns-xs",
-                (loadingNote || !userNotes.length) &&
+                (loadingNote || !noteState.filteredNotes.length) &&
                   "flex items-start justify-center"
               )}
             >
               {loadingNote && <Loading message="loading notes..." />}
-              {userNotes.length >= 1 &&
-                [...userNotes]
+              {noteState.filteredNotes.length >= 1 &&
+                [...noteState.filteredNotes]
                   .sort(
                     (a, b) =>
                       getTimestamp(b.updated_at) - getTimestamp(a.updated_at)
@@ -239,7 +255,7 @@ function Dashboard(): JSX.Element {
                       )}
                     />
                   ))}
-              {!loadingNote && !userNotes.length && (
+              {!loadingNote && !noteState.filteredNotes.length && (
                 <p className="w-full p-4 sm:p-6 rounded-lg text-sm bg-black/3 dark:bg-black/10 break-inside-avoid">
                   Ops no note found...
                 </p>
