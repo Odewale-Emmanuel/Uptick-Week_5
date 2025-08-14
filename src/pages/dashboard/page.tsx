@@ -101,10 +101,8 @@ function Dashboard(): JSX.Element {
             "an error occurred while deleting your note from the database"
           );
           throw error;
-          // return;
         }
       }
-      // dispatch({ type: "delete_note", payload: id });
     }
   }
 
@@ -120,6 +118,7 @@ function Dashboard(): JSX.Element {
         description="StarkNotes User Dashboard"
         url={`https://starknote.vercel.app${location.pathname}`}
       />
+      {/* TODO - make aside responsive */}
       <aside
         className={cn(
           "flex flex-col bg-[#fafafa] dark:bg-[#171717] p-4 h-screen gap-4 sm:gap-6 col-span-1",
@@ -233,7 +232,6 @@ function Dashboard(): JSX.Element {
                       onClick={() => handleNoteClick(note)}
                       handleDelete={handleDeleteNote}
                       handleEdit={handleUpdateNote}
-                      // handleFavorite={handleUpdateFavorite}
                       className={cn(
                         "break-inside-avoid mb-4",
                         note._id === previewNote?._id &&
@@ -242,8 +240,8 @@ function Dashboard(): JSX.Element {
                     />
                   ))}
               {!loadingNote && !userNotes.length && (
-                <p className="w-full p-4 sm:p-6 rounded-lg text-sm bg-black/3 dark:bg-black/10 ">
-                  Save your Thoughts, Ideas and Experiences...
+                <p className="w-full p-4 sm:p-6 rounded-lg text-sm bg-black/3 dark:bg-black/10 break-inside-avoid">
+                  Ops no note found...
                 </p>
               )}
             </div>
