@@ -12,6 +12,11 @@ export function PreviewNote({
   note: Note | null;
   closePreview: () => void;
 }) {
+  if (!note) {
+    closePreview();
+    return;
+  }
+
   return (
     <div className="hidden lg:flex flex-col gap-4 md:gap-6 col-span-2 border-s-2 dark:bg-white/10 p-4 sm:p-6 h-full overflow-hidden">
       {note && (

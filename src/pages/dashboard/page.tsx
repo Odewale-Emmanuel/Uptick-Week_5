@@ -23,7 +23,6 @@ import { useLocation } from "react-router-dom";
 import { AddNewNote } from "@/components/add-note";
 import { PreviewNote } from "@/components/note-preview";
 import { toast } from "react-toastify";
-// import axios from "axios";
 
 function Dashboard(): JSX.Element {
   const [previewNoteStatus, setPreviewNoteStatus] = useState(false);
@@ -35,6 +34,9 @@ function Dashboard(): JSX.Element {
   const location = useLocation();
 
   useEffect(() => {
+    const html: HTMLCollectionOf<HTMLElement> =
+      document.getElementsByTagName("html");
+    html[0].classList.add("overflow-hidden");
     dispatch({ type: "set_note", payload: notes });
   }, [notes, authToken, user]);
 
@@ -57,11 +59,10 @@ function Dashboard(): JSX.Element {
 
   function handleUpdateNote(note: Note): void {
     dispatch({ type: "update_note", payload: note });
+    if (previewNote && previewNote._id === note._id) {
+      setPreviewNote(note);
+    }
   }
-
-  // function handleUpdateFavorite(note: Note): void {
-  //   dispatch({ type: "update_note", payload: note });
-  // }
 
   function handleNoteClick(note: Note): void {
     setPreviewNoteStatus(true);
@@ -100,10 +101,10 @@ function Dashboard(): JSX.Element {
             "an error occurred while deleting your note from the database"
           );
           throw error;
-          return;
+          // return;
         }
       }
-      dispatch({ type: "delete_note", payload: id });
+      // dispatch({ type: "delete_note", payload: id });
     }
   }
 
@@ -199,7 +200,7 @@ function Dashboard(): JSX.Element {
         >
           <header className="flex flex-col gap-4 sm:gap-6">
             <h1 className="font-normal text-2xl sm:text-3xl">My Notes</h1>
-            <AddNewNote updateNote={handleUpdateNotes} />
+            <AddNewNote updateNotes={handleUpdateNotes} />
           </header>
 
           <div
@@ -210,7 +211,7 @@ function Dashboard(): JSX.Element {
           >
             <div
               className={cn(
-                "columns-1 sm:columns-2 lg:columns-3 gap-4 grow-1 overflow-hidden overflow-y-auto w-full",
+                "columns-1 sm:columns-2 lg:columns-3 gap-4 overflow-hidden overflow-y-auto w-full",
                 "[&::-webkit-scrollbar]:w-0",
                 previewNoteStatus && "columns-xs sm:columns-xs lg:columns-xs",
                 (loadingNote || !userNotes.length) &&

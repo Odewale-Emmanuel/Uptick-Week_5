@@ -19,10 +19,8 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import type { Note } from "@/types/note";
 import type { MouseEvent } from "react";
-
-function removeExtraSpaces(input: string): string {
-  return input.replace(/\s+/g, " ").trim();
-}
+import { removeExtraSpaces } from "@/utils/remove-extra-space";
+import { Loading } from "./loader";
 
 export function UpdateNote({
   note,
@@ -35,6 +33,7 @@ export function UpdateNote({
   const [title, setTitle] = useState<string>(note.title);
   const [tags, setTags] = useState<string>(note.tags.join(" "));
   const [content, setContent] = useState<string>(note.content);
+  const [loading, setLoading] = useState<boolean>(false);
 
   const tagsArray = tags.length >= 1 ? removeExtraSpaces(tags).split(" ") : [];
   const favorite = note.favorite;
@@ -43,14 +42,13 @@ export function UpdateNote({
   function handleUpdateNote(e: MouseEvent<HTMLButtonElement>): void {
     e.stopPropagation();
 
-    // input validations
-
     if (!title || title.length < 3 || !content || content.length < 15) {
       toast("Input fields cannot be empty or way too short");
       return;
     }
 
-    console.log(tagsArray, tagsArray.join(" "));
+    setLoading(true);
+
     try {
       axios.patch(
         `https://uptick-week-4.onrender.com/api/note`,
@@ -78,11 +76,13 @@ export function UpdateNote({
         updated_at,
       });
       toast.success("note updated successfully");
+      setLoading(false);
     } catch (error: unknown) {
       if (error) {
         toast.error(
           "An error occurred while updating your note in the database. please check your network and try again"
         );
+        setLoading(false);
       }
       return;
     }
@@ -161,8 +161,13 @@ export function UpdateNote({
               type="submit"
               variant="default"
               onClick={(e) => handleUpdateNote(e)}
+              className="dark:bg-white/10 hover:cursor-pointer"
             >
-              Update Note
+              {loading ? (
+                <Loading message="" className="text-black dark:text-white" />
+              ) : (
+                <span className="dark:text-white"> Update Note</span>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>

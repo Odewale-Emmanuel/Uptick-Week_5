@@ -19,35 +19,37 @@ import axios from "axios";
 import { toast } from "react-toastify";
 import type { Note } from "@/types/note";
 import type { MouseEvent } from "react";
+import { removeExtraSpaces } from "@/utils/remove-extra-space";
+import { Loading } from "./loader";
 
 export function AddNewNote({
-  updateNote,
+  updateNotes,
 }: {
-  updateNote: (notes: Note[]) => void;
+  updateNotes: (notes: Note[]) => void;
 }) {
   const { authToken, user } = useAuth();
   const [title, setTitle] = useState<string>("");
   const [tags, setTags] = useState<string>("");
   const [content, setContent] = useState<string>("");
+  const [loading, setLoading] = useState<boolean>(false);
 
-  const tagsArray = tags.length >= 1 ? tags.split(" ") : [];
+  const tagsArray = tags.length >= 1 ? removeExtraSpaces(tags).split(" ") : [];
 
   function handleAddNewNote(e: MouseEvent<HTMLButtonElement>): void {
     e.stopPropagation();
-
-    // input validations
 
     if (!title || title.length < 3 || !content || content.length < 15) {
       toast("Input fields cannot be empty or way too short");
       return;
     }
 
+    setLoading(true);
     try {
       axios.post(
         `https://uptick-week-4.onrender.com/api/note?user_id=${user?._id}`,
         {
-          title,
-          content,
+          title: removeExtraSpaces(title),
+          content: removeExtraSpaces(content),
           tags: tagsArray,
           user_id: user?._id,
         },
@@ -72,22 +74,24 @@ export function AddNewNote({
             headers: { Authorization: `Bearer ${authToken}` },
           }
         );
-        updateNote(response.data);
+        updateNotes(response.data);
+        toast.success("note created successfully");
+        setTitle("");
+        setTags("");
+        setContent("");
+        setLoading(false);
       } catch (error: unknown) {
         if (error) {
           toast.error(
             "An error occurred while updating your note. please check your network and try again"
           );
+          setLoading(false);
           return;
         }
       }
     };
 
     fetchNotes();
-
-    setTitle("");
-    setTags("");
-    setContent("");
   }
 
   return (
@@ -157,8 +161,13 @@ export function AddNewNote({
               type="submit"
               variant="default"
               onClick={(e) => handleAddNewNote(e)}
+              className="dark:bg-white/10 hover:cursor-pointer"
             >
-              Add Note
+              {loading ? (
+                <Loading message="" className="text-black dark:text-white" />
+              ) : (
+                <span className="dark:text-white">Add Note</span>
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
