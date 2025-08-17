@@ -53,7 +53,7 @@ function Dashboard(): JSX.Element {
   }
 
   if (!user) {
-    <Loading message="Loading user dashboard..." />;
+    return <Loading message="Loading user dashboard..." />;
   }
 
   function handleLogout(): void {
