@@ -88,7 +88,7 @@ The backend handles user authentication, note management (CRUD operations), and 
 
    - Clone this repo:
      ```bash
-     git clone https://github.com/Odewale-Emmanuel/StarkNote.git
+     git clone https://github.com/Odewale-Emmanuel/Uptick-Week_5.git
      ```
    - Install dependencies:
      ```bash
